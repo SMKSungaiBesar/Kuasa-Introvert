@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kuasa Introvert: Seni Bersembang Tanpa Rasa Kekok</title>
+    <!-- Muat turun fon retro pixel dan fon mesra kanak-kanak -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-sky: #7dd3fc;
+            --primary: #f59e0b;
+            --primary-dark: #b45309;
+            --secondary: #10b981;
+            --secondary-dark: #047857;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0f172a;
+            font-family: 'Fredoka', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+            line-height: 1.5;
+        }
+
+        /* Bekas Utama Permainan */
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HUD Atas (Status Pemain) */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0) 100%);
+            color: white;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .hud-badge {
+            background: rgba(30, 41, 59, 0.9);
+            border: 3px solid #fbbf24;
+            border-radius: 14px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        /* Bar Bateri Sosial */
+        .battery-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .battery-bar-bg {
+            width: 90px;
+            height: 18px;
+            background: #334155;
+            border: 2px solid #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #battery-fill {
+            height: 100%;
+            width: 70%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        /* Butang Pembantu Atas */
+        .btn-hud {
+            background: #3b82f6;
+            color: white;
+            border: 3px solid #ffffff;
+            border-radius: 12px;
+            padding: 7px 12px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #1d4ed8;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-hud:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1d4ed8;
+        }
+
+        .btn-hud.secondary {
+            background: #8b5cf6;
+            box-shadow: 0 4px 0 #5b21b6;
+        }
+
+        .btn-hud.secondary:active {
+            box-shadow: 0 1px 0 #5b21b6;
+        }
+
+        /* Kanvas Permainan */
+        #canvas-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        /* Kawalan Sentuh Bawah (Mobile/Tablet) */
+        #touch-controls {
+            position: absolute;
+            bottom: 14px;
+            left: 0;
+            right: 0;
+            z-index: 25;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 18px;
+            pointer-events: none;
+        }
+
+        .dpad-group {
+            display: flex;
+            gap: 14px;
+            pointer-events: auto;
+        }
+
+        .touch-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.85);
+            border: 4px solid #1e293b;
+            box-shadow: 0 6px 0 #1e293b, 0 8px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.05s, background 0.1s;
+        }
+
+        .touch-btn:active, .touch-btn.pressed {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1e293b;
+            background: #fde047;
+        }
+
+        .touch-btn.jump-btn {
+            width: 74px;
+            height: 74px;
+            background: rgba(251, 191, 36, 0.92);
+            border-color: #78350f;
+            box-shadow: 0 6px 0 #78350f, 0 8px 15px rgba(0,0,0,0.3);
+            font-size: 1.1rem;
+            flex-direction: column;
+        }
+
+        .touch-btn.jump-btn:active, .touch-btn.jump-btn.pressed {
+            background: #f59e0b;
+            box-shadow: 0 2px 0 #78350f;
+        }
+
+        /* Skrin Tindihan (Modal Mula, Kuiz, Senarai Soalan, Tamat) */
+        .overlay-screen {
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border: 5px solid #1e293b;
+            border-radius: 24px;
+            box-shadow: 0 10px 0 #1e293b, 0 20px 35px rgba(0, 0, 0, 0.5);
+            max-width: 580px;
+            width: 100%;
+            padding: 22px;
+            text-align: center;
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .game-title {
+            font-size: clamp(1.1rem, 3.2vw, 1.65rem);
+            color: #d97706;
+            text-shadow: 2px 2px 0 #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #475569;
+            font-size: 1rem;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+
+        /* Pilihan Watak */
+        .char-select-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .char-option {
+            border: 4px solid #cbd5e1;
+            border-radius: 18px;
+            padding: 12px;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: all 0.15s;
+        }
+
+        .char-option.selected {
+            border-color: #f59e0b;
+            background: #fef3c7;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 0 #d97706;
+        }
+
+        .char-preview {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 8px;
+            image-rendering: pixelated;
+        }
+
+        /* Butang Utama Besar */
+        .btn-primary {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: 4px solid #14532d;
+            border-radius: 18px;
+            padding: 14px 28px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #14532d;
+            transition: transform 0.1s;
+            width: 100%;
+        }
+
+        .btn-primary:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #14532d;
+        }
+
+        /* Gaya Modal Soalan Kuiz */
+        .quiz-header {
+            display: inline-block;
+            background: #fef3c7;
+            color: #b45309;
+            border: 2px solid #f59e0b;
+            padding: 4px 14px;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .quiz-question-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            line-height: 1.45;
+            text-align: left;
+            background: #f1f5f9;
+            padding: 14px;
+            border-radius: 16px;
+            border-left: 6px solid #3b82f6;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #ffffff;
+            border: 3px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 12px 14px;
+            text-align: left;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #cbd5e1;
+            transition: all 0.1s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .option-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #cbd5e1;
+        }
+
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #14532d;
+            box-shadow: 0 4px 0 #16a34a;
+        }
+
+        .option-btn.wrong {
+            background: #fee2e2;
+            border-color: #dc2626;
+            color: #7f1d1d;
+            box-shadow: 0 4px 0 #dc2626;
+        }
+
+        .option-letter {
+            background: #e2e8f0;
+            color: #1e293b;
+            font-weight: 700;
+            min-width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        #quiz-feedback {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Senarai Kemajuan Soalan */
+        .q-list-item {
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.92rem;
+        }
+
+        .q-list-item.done {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        /* Sijil Tamat */
+        .certificate-box {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 4px dashed #d97706;
+            border-radius: 18px;
+            padding: 16px;
+            margin: 14px 0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .stat-pill {
+            background: white;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 8px 12px;
+            flex: 1;
+        }
+
+        @media (max-width: 600px) {
+            .hud-badge {
+                padding: 4px 8px;
+                font-size: 0.82rem;
+            }
+            .battery-bar-bg {
+                width: 62px;
+                height: 14px;
+            }
+            .btn-hud {
+                padding: 5px 8px;
+                font-size: 0.8rem;
+            }
+            .touch-btn {
+                width: 58px;
+                height: 58px;
+            }
+            .touch-btn.jump-btn {
+                width: 68px;
+                height: 68px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <!-- HUD Atas -->
+    <div id="hud">
+        <div class="hud-group">
+            <div class="hud-badge" title="Bateri Sosial Kamu">
+                <span>🔋</span>
+                <div class="battery-container">
+                    <div class="battery-bar-bg">
+                        <div id="battery-fill"></div>
+                    </div>
+                    <span id="battery-text">70%</span>
+                </div>
+            </div>
+            <div class="hud-badge" title="Bintang Terkumpul">
+                <span>⭐</span>
+                <span id="score-text">0</span>
+            </div>
+            <div class="hud-badge" title="Soalan Terjawab">
+                <span>❓</span>
+                <span id="quiz-progress-text">0/15</span>
+            </div>
+        </div>
+
+        <div class="hud-group">
+            <button id="btn-list" class="btn-hud secondary" type="button">📋 Senarai Soalan</button>
+            <button id="btn-mute" class="btn-hud" type="button" title="Bunyi">🔊</button>
+            <button id="btn-restart-hud" class="btn-hud" type="button" title="Mula Semula">🔄</button>
+        </div>
+    </div>
+
+    <!-- Kanvas Permainan 2D -->
+    <div id="canvas-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Kawalan Sentuh Telefon Pintar / Tablet -->
+    <div id="touch-controls">
+        <div class="dpad-group">
+            <button id="touch-left" class="touch-btn" type="button" aria-label="Kiri">◀</button>
+            <button id="touch-right" class="touch-btn" type="button" aria-label="Kanan">▶</button>
+        </div>
+        <button id="touch-jump" class="touch-btn jump-btn" type="button" aria-label="Lompat">
+            <span>▲</span>
+            <span style="font-size: 0.7rem;">LOMPAT</span>
+        </button>
+    </div>
+
+    <!-- SKRIN MULA -->
+    <div id="start-screen" class="overlay-screen">
+        <div class="modal-card">
+            <div class="pixel-font game-title">KUASA INTROVERT</div>
+            <div style="font-weight: 700; color: #0284c7; font-size: 1.1rem; margin-bottom: 6px;">
+                Seni Bersembang Tanpa Rasa Kekok
+            </div>
+            <p class="subtitle">
+                Jom bantu watak kita berjalan di kawasan sekolah waktu rehat! Lompat dan langgar <strong>15 Blok Tanda Soal (?)</strong> untuk belajar rahsia komunikasi hebat serta elak <em>Raksasa Rasa Kekok</em>!
+            </p>
+
+            <div style="font-weight: 700; margin-bottom: 8px; color: #1e293b;">Pilih Watak Murid:</div>
+            <div class="char-select-grid">
+                <div class="char-option selected" id="select-boy" onclick="selectCharacter('boy')">
+                    <canvas id="preview-boy" class="char-preview" width="32" height="32"></canvas>
+                    <div style="font-weight: 700; color: #1e293b;">Aiman (Lelaki)</div>
+                    <div style="font-size: 0.8rem; color: #64748b;">Suka baca buku & pemerhati</div>
+                </div>
+                <div class="char-option" id="select-girl" onclick="selectCharacter('girl')">
+                    <canvas id="preview-girl" class="char-preview" width="32" height="32"></canvas>
+                    <div style="font-weight: 700; color: #1e293b;">Amirah (Perempuan)</div>
+                    <div style="font-size: 0.8rem; color: #64748b;">Kreatif & pendengar setia</div>
+                </div>
+            </div>
+
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 10px; font-size: 0.88rem; color: #334155; margin-bottom: 16px;">
+                <strong>Cara Main:</strong> Guna kekunci <b>Anak Panah / WASD</b> atau <b>Butang di Bawah Skrin</b> untuk bergerak & melompat. Langgar blok <b>[?]</b> dari bawah untuk menjawab kuiz!
+            </div>
+
+            <button id="btn-start-game" class="btn-primary" type="button">▶ MULA MENGEMBARA!</button>
+        </div>
+    </div>
+
+    <!-- MODAL KUIZ SOALAN -->
+    <div id="quiz-modal" class="overlay-screen hidden">
+        <div class="modal-card">
+            <div class="quiz-header" id="quiz-badge-num">Soalan #1 daripada 15</div>
+            <div class="quiz-question-text" id="quiz-question">Soalan akan dipaparkan di sini...</div>
+            <div class="options-list" id="quiz-options"></div>
+            <div id="quiz-feedback" class="hidden"></div>
+            <button id="btn-continue-quiz" class="btn-primary hidden" style="margin-top: 14px;" type="button">
+                Teruskan Perjalanan ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL SENARAI SOALAN (HELPER) -->
+    <div id="list-modal" class="overlay-screen hidden">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 style="margin: 0; color: #1e293b; font-size: 1.3rem;">📋 Kemajuan 15 Blok Kuiz</h2>
+                <button id="btn-close-list" class="btn-hud" style="background: #ef4444; box-shadow: 0 3px 0 #991b1b;" type="button">✕ Tutup</button>
+            </div>
+            <p style="font-size: 0.9rem; color: #475569; margin-top: 0; text-align: left;">
+                Cari semua blok <strong>[?]</strong> di sepanjang perjalanan dari Kantin hingga ke Taman Sekolah!
+            </p>
+            <div id="questions-checklist" style="max-height: 55vh; overflow-y: auto; padding-right: 4px;"></div>
+        </div>
+    </div>
+
+    <!-- SKRIN TAMAT / SIJIL -->
+    <div id="end-screen" class="overlay-screen hidden">
+        <div class="modal-card">
+            <div style="font-size: 3rem; margin-bottom: 4px;">🏆🎓🌟</div>
+            <div class="pixel-font game-title" style="font-size: 1.25rem;">TAHNIAH! TAMAT!</div>
+
+            <div class="certificate-box">
+                <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #92400e; font-weight: 700;">
+                    Lencana Kecemerlangan Sekolah
+                </div>
+                <div style="font-size: 1.45rem; font-weight: 700; color: #b45309; margin: 4px 0;">
+                    "WIRA INTROVERT HEBAT!"
+                </div>
+                <p id="end-message" style="font-size: 0.95rem; color: #334155; margin: 6px 0;">
+                    Kamu telah membuktikan bahawa murid pendiam juga sangat bijak berkomunikasi dan mampu berjaya!
+                </p>
+
+                <div class="stats-row">
+                    <div class="stat-pill">
+                        <div style="font-size: 0.8rem; color: #64748b;">Jumlah Bintang</div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #d97706;" id="final-stars">0 ⭐</div>
+                    </div>
+                    <div class="stat-pill">
+                        <div style="font-size: 0.8rem; color: #64748b;">Bateri Sosial</div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #16a34a;" id="final-battery">100% 🔋</div>
+                    </div>
+                    <div class="stat-pill">
+                        <div style="font-size: 0.8rem; color: #64748b;">Kuiz Betul</div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #2563eb;" id="final-quiz">15/15 ❓</div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-play-again" class="btn-primary" type="button">🔄 Main Lagi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * ============================================================================
+ * 1. DATA 15 SOALAN KUIZ (TEMA: KUASA INTROVERT - ARAS 12 TAHUN KE BAWAH)
+ * ============================================================================
+ */
+const QUIZ_QUESTIONS = [
+    {
+        id: 1,
+        q: "Selepas penat bermain dengan kawan-kawan semasa waktu rehat, Ali suka duduk diam membaca buku cerita seorang diri. Mengapakah Ali berbuat begitu?",
+        correct: "Dia mahu mengecas semula bateri sosialnya yang sudah penat.",
+        wrong: [
+            "Dia marah dan tidak mahu berkawan dengan sesiapa lagi.",
+            "Dia lupa cara untuk bercakap dengan kawan-kawannya."
+        ]
+    },
+    {
+        id: 2,
+        q: "Manakah antara situasi berikut menunjukkan perasaan 'malu-malu atau takut diejek' dan BUKAN sifat seorang introvert?",
+        correct: "Sara mahu menyanyi di pentas tetapi takut kawan-kawannya mentertawakannya.",
+        wrong: [
+            "Aiman suka melukis seorang diri di bilik selepas pulang dari sekolah.",
+            "Mei Ling lebih suka berbual dengan seorang kawan baik berbanding ramai orang."
+        ]
+    },
+    {
+        id: 3,
+        q: "Seorang murid baharu duduk di sebelah kamu di kantin. Apakah cara paling mudah untuk menegurnya tanpa rasa kekok?",
+        correct: "Senyum dan tanya, 'Sedap tak nasi lemak yang awak beli tu?'",
+        wrong: [
+            "Pandang sahaja mukanya tanpa bercakap apa-apa.",
+            "Terus bertanya semua rahsia hidupnya dengan suara yang kuat."
+        ]
+    },
+    {
+        id: 4,
+        q: "Supaya perbualan tidak cepat habis dan menjadi sunyi, soalan manakah yang paling bagus ditanya kepada kawan?",
+        correct: "'Apakah watak kartun kegemaran awak dan kenapa awak suka dia?'",
+        wrong: [
+            "'Awak sudah makan ke belum hari ini?'",
+            "'Awak suka warna biru ke tidak?'"
+        ]
+    },
+    {
+        id: 5,
+        q: "Apabila kawan kamu sedang bercerita tentang kucing peliharaannya, bagaimanakah cara menunjukkan kamu sedang mendengar dengan baik?",
+        correct: "Pandang wajahnya, mengangguk, dan bertanya siapa nama kucing itu.",
+        wrong: [
+            "Sibuk bermain pemadam di atas meja sambil melihat ke luar tingkap.",
+            "Memotong percakapannya dan terus bercerita tentang mainan sendiri."
+        ]
+    },
+    {
+        id: 6,
+        q: "Apakah salah faham (mitos) yang sering diperkatakan tentang murid yang pendiam di sekolah?",
+        correct: "Orang pendiam dianggap sombong dan tidak boleh berjaya apabila besar nanti.",
+        wrong: [
+            "Orang pendiam suka membaca buku dan mendengar cerita orang lain.",
+            "Orang pendiam memerlukan masa bersendirian untuk berehat."
+        ]
+    },
+    {
+        id: 7,
+        q: "Cikgu melantik Amirah, seorang murid yang pendiam, menjadi ketua kumpulan melukis poster. Apakah kekuatan utama Amirah sebagai ketua?",
+        correct: "Dia mendengar semua cadangan ahli kumpulan dan membahagikan tugas dengan adil.",
+        wrong: [
+            "Dia menjerit menyuruh semua ahli kumpulan membuat kerja dengan cepat.",
+            "Dia membuat semua kerja seorang diri tanpa berbincang dengan kawan."
+        ]
+    },
+    {
+        id: 8,
+        q: "Dalam seni bersembang, ada teknik 'Ulang Kata' supaya perbualan terus berjalan. Jika kawan berkata, 'Semalam saya pergi ke zoo!', apakah jawapan terbaik?",
+        correct: "'Wah, pergi ke zoo? Haiwan apa yang paling menarik di sana?'",
+        wrong: [
+            "'Oh, okey.' kemudian terus berjalan pergi.",
+            "'Saya pun pernah pergi zoo dulu, lagi besar daripada zoo awak.'"
+        ]
+    },
+    {
+        id: 9,
+        q: "Mengapakah murid yang pendiam sering menghasilkan lukisan, karangan, atau rekaan sains yang sangat hebat?",
+        correct: "Mereka pandai fokus dan berfikir dengan mendalam dalam suasana tenang.",
+        wrong: [
+            "Mereka mempunyai kuasa ajaib yang diberikan oleh cikgu.",
+            "Mereka tidak pernah tidur pada waktu malam untuk menyiapkan kerja."
+        ]
+    },
+    {
+        id: 10,
+        q: "Kamu dijemput ke majlis hari jadi kawan yang ramai tetamu. Apakah persediaan terbaik sebelum pergi supaya kamu tidak cepat penat?",
+        correct: "Berehat dengan tenang di rumah sebelum bertolak ke majlis tersebut.",
+        wrong: [
+            "Berlari keliling taman permainan selama dua jam sebelum ke majlis.",
+            "Bermain permainan video yang sangat bising tanpa henti sebelum pergi."
+        ]
+    },
+    {
+        id: 11,
+        q: "Apakah maksud 'Bual Ringan' (Small Talk) yang berguna semasa mula-mula berjumpa kawan?",
+        correct: "Berbual perkara mudah seperti cuaca hari ini atau warna beg sekolah.",
+        wrong: [
+            "Bercakap menggunakan suara yang sangat perlahan seperti berbisik.",
+            "Membaca buku teks Sains dengan kuat di hadapan kawan."
+        ]
+    },
+    {
+        id: 12,
+        q: "Cikgu meminta kamu bercerita tentang buku kegemaran di hadapan kelas esok. Apakah cara terbaik untuk mengurangkan rasa gementar?",
+        correct: "Tulis isi penting di atas kad kecil dan berlatih di hadapan cermin atau ibu bapa.",
+        wrong: [
+            "Pura-pura sakit perut supaya tidak perlu datang ke sekolah esok.",
+            "Tidak membuat sebarang persediaan dan hanya diam di hadapan kelas."
+        ]
+    },
+    {
+        id: 13,
+        q: "Kawan-kawan kamu sedang berbual tentang permainan baharu yang kamu langsung tidak tahu. Apakah tindakan yang paling bijak dan tidak kekok?",
+        correct: "Senyum dan bertanya, 'Seronok ke permainan tu? Cuba ceritakan cara mainnya.'",
+        wrong: [
+            "Menipu dengan mengatakan kamu sudah juara dalam permainan itu.",
+            "Marah dan menyuruh mereka menukar topik perbualan serta-merta."
+        ]
+    },
+    {
+        id: 14,
+        q: "Siapakah tokoh terkenal dunia yang dulunya seorang kanak-kanak pendiam tetapi berjaya menjadi saintis terhebat?",
+        correct: "Albert Einstein yang suka berfikir secara senyap dan mendalam.",
+        wrong: [
+            "Watak adiwira fiksyen yang suka menjerit setiap masa.",
+            "Tiada sesiapa kerana hanya orang yang banyak bercakap boleh berjaya."
+        ]
+    },
+    {
+        id: 15,
+        q: "Selepas seronok berbual dengan kawan semasa hari sukan, bateri sosial kamu sudah habis dan kamu mahu berehat. Bagaimanakah cara meminta diri dengan sopan?",
+        correct: "'Seronok berbual dengan awak! Saya nak pergi minum air dan rehat sekejap ya.'",
+        wrong: [
+            "Terus lari meninggalkan kawan tanpa mengucapkan apa-apa.",
+            "Menutup telinga dengan kedua-dua belah tangan di hadapan kawan."
+        ]
+    }
+];
+
+/**
+ * ============================================================================
+ * 2. SISTEM AUDIO RETRO (WEB AUDIO API SYNTH - TIADA URL LUAR)
+ * ============================================================================
+ */
+class RetroAudio {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    playTone(freq, type, duration, startTime = 0, vol = 0.12) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + startTime);
+
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime + startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + startTime + duration);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(this.ctx.currentTime + startTime);
+            osc.stop(this.ctx.currentTime + startTime + duration);
+        } catch (e) {
+            // Abaikan ralat audio jika pelayar menyekat autoplay
+        }
+    }
+
+    jump() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(520, this.ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.16);
+        } catch (e) {}
+    }
+
+    coin() {
+        this.playTone(987.77, 'square', 0.08, 0, 0.1);
+        this.playTone(1318.51, 'square', 0.18, 0.08, 0.1);
+    }
+
+    blockHit() {
+        this.playTone(330, 'triangle', 0.08, 0, 0.15);
+        this.playTone(660, 'square', 0.14, 0.07, 0.12);
+    }
+
+    correct() {
+        this.playTone(523.25, 'square', 0.1, 0, 0.12);
+        this.playTone(659.25, 'square', 0.1, 0.1, 0.12);
+        this.playTone(783.99, 'square', 0.1, 0.2, 0.12);
+        this.playTone(1046.50, 'square', 0.25, 0.3, 0.14);
+    }
+
+    wrong() {
+        this.playTone(300, 'sawtooth', 0.15, 0, 0.1);
+        this.playTone(230, 'sawtooth', 0.25, 0.15, 0.1);
+    }
+
+    stomp() {
+        this.playTone(180, 'square', 0.12, 0, 0.14);
+    }
+
+    hurt() {
+        this.playTone(200, 'sawtooth', 0.12, 0, 0.12);
+        this.playTone(140, 'sawtooth', 0.2, 0.1, 0.12);
+    }
+
+    win() {
+        const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+        const times = [0, 0.12, 0.24, 0.36, 0.52, 0.66];
+        notes.forEach((n, i) => this.playTone(n, 'square', 0.18, times[i], 0.13));
+    }
+}
+
+const sfx = new RetroAudio();
+
+/**
+ * ============================================================================
+ * 3. LUKISAN PIXEL ART SPRITE (WATAK, RAKSASA, IKON)
+ * ============================================================================
+ */
+function drawPixelCharacter(ctx, x, y, w, h, gender, facingRight, walkFrame, isJumping) {
+    ctx.save();
+    ctx.translate(Math.round(x + w / 2), Math.round(y));
+    if (!facingRight) ctx.scale(-1, 1);
+
+    const p = w / 16; // Saiz 1 piksel relatif
+
+    // Bayang-bayang bawah
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(-6 * p, 15 * p, 12 * p, 2 * p);
+
+    // Rambut & Kepala
+    ctx.fillStyle = '#1e293b'; // Rambut hitam
+    if (gender === 'boy') {
+        ctx.fillRect(-5 * p, 0, 10 * p, 4 * p);
+        ctx.fillRect(-6 * p, 2 * p, 2 * p, 4 * p);
+    } else {
+        // Rambut bertocang / panjang comel
+        ctx.fillRect(-6 * p, 0, 12 * p, 5 * p);
+        ctx.fillRect(-7 * p, 3 * p, 3 * p, 7 * p);
+        // Reben merah jambu
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(-6 * p, 1 * p, 2 * p, 2 * p);
+    }
+
+    // Muka (Kulit cerah sawo matang)
+    ctx.fillStyle = '#fed7aa';
+    ctx.fillRect(-4 * p, 3 * p, 9 * p, 6 * p);
+
+    // Mata & Senyuman
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(2 * p, 4 * p, 1.5 * p, 2 * p); // Mata kanan
+    ctx.fillRect(-1 * p, 4 * p, 1.5 * p, 2 * p); // Mata kiri
+    // Pipi comel
+    ctx.fillStyle = '#fda4af';
+    ctx.fillRect(3 * p, 6.5 * p, 1.5 * p, 1 * p);
+
+    // Baju Sekolah Malaysia (Putih + Tali Leher / Pinafore Biru)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-4 * p, 9 * p, 8 * p, 4 * p);
+
+    if (gender === 'boy') {
+        // Tali leher merah
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(1 * p, 9 * p, 1.5 * p, 3 * p);
+        // Seluar biru gelap sekolah rendah
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(-4 * p, 12 * p, 8 * p, 3 * p);
+    } else {
+        // Pinafore biru sekolah rendah
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(-4 * p, 10 * p, 8 * p, 5 * p);
+    }
+
+    // Beg sekolah di belakang (Hijau / Oren)
+    ctx.fillStyle = gender === 'boy' ? '#10b981' : '#f59e0b';
+    ctx.fillRect(-6.5 * p, 8 * p, 2.5 * p, 5 * p);
+
+    // Kaki & Kasut Sekolah (Animasi berjalan)
+    ctx.fillStyle = '#0f172a';
+    if (isJumping) {
+        ctx.fillRect(-4 * p, 14 * p, 3 * p, 2 * p);
+        ctx.fillRect(2 * p, 13 * p, 3 * p, 2 * p);
+    } else {
+        const offset = Math.sin(walkFrame * 0.35) * 2 * p;
+        ctx.fillRect((-3.5 * p) + offset, 15 * p, 3 * p, 1.5 * p);
+        ctx.fillRect((1 * p) - offset, 15 * p, 3 * p, 1.5 * p);
+    }
+
+    ctx.restore();
+}
+
+// Lukis pratonton watak pada skrin mula
+function renderCharacterPreviews() {
+    ['boy', 'girl'].forEach(g => {
+        const c = document.getElementById(`preview-${g}`);
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, 32, 32);
+        drawPixelCharacter(ctx, 2, 1, 28, 30, g, true, 0, false);
+    });
+}
+
+/**
+ * ============================================================================
+ * 4. ENJIN PERMAINAN 2D PLATFORMER
+ * ============================================================================
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Pemboleh ubah keadaan permainan
+let selectedGender = 'boy';
+let gameState = 'START'; // START, PLAYING, QUIZ, LIST, END
+let score = 0;
+let socialBattery = 70; // 0 hingga 100
+let answeredCount = 0;
+let cameraX = 0;
+let lastTime = 0;
+let gameTime = 0;
+
+// Fizik & Pemain (Ditala khas supaya lompatan mudah & selesa untuk budak 12 tahun ke bawah)
+const GRAVITY = 1550;
+const JUMP_FORCE = -640; // Tinggi lompatan ~132px, mudah capai platform 90-105px
+const MOVE_SPEED = 270;
+
+const player = {
+    x: 80,
+    y: 200,
+    w: 36,
+    h: 42,
+    vx: 0,
+    vy: 0,
+    onGround: false,
+    facingRight: true,
+    walkTimer: 0,
+    invulnTimer: 0
+};
+
+// Input Kawalan
+const keys = {
+    left: false,
+    right: false,
+    jump: false
+};
+
+// Entiti Dunia Permainan
+let platforms = [];
+let questionBlocks = [];
+let coins = [];
+let enemies = [];
+let particles = [];
+let floatingTexts = [];
+let decorations = [];
+let flagPole = { x: 4800, y: 0, h: 240 };
+
+// Saiz dunia menegak rujukan (akan diskalakan secara automatik ikut tinggi skrin)
+const WORLD_HEIGHT = 540;
+const GROUND_Y = 450;
+
+/**
+ * Bina reka bentuk tahap (Level Design) yang mempunyai 15 Blok Tanda Soal (?)
+ * Semua ketinggian platform dijamin mudah dilompat!
+ */
+function buildLevel() {
+    platforms = [];
+    questionBlocks = [];
+    coins = [];
+    enemies = [];
+    particles = [];
+    floatingTexts = [];
+    decorations = [];
+
+    // 1. Lantai Utama Sekolah (dengan beberapa jurang kecil yang sangat mudah dilompat)
+    const groundSegments = [
+        { x: 0, w: 1150, theme: 'kantin' },
+        { x: 1230, w: 1250, theme: 'koridor' },
+        { x: 2560, w: 1250, theme: 'perpustakaan' },
+        { x: 3890, w: 1250, theme: 'taman' }
+    ];
+
+    groundSegments.forEach(seg => {
+        platforms.push({
+            x: seg.x,
+            y: GROUND_Y,
+            w: seg.w,
+            h: WORLD_HEIGHT - GROUND_Y + 100,
+            type: 'ground',
+            theme: seg.theme
+        });
+    });
+
+    // 2. Platform Bertingkat & 15 Blok Tanda Soal (?)
+    // Jarak menegak antara lantai (450) dan blok/platform ialah sekitar 95-110px (sangat mudah dilompat!)
+    const levelLayout = [
+        // Zon 1: Kantin Sekolah (Soalan 1 - 4)
+        { qIdx: 0, bx: 280, by: 340, plat: null },
+        { qIdx: 1, bx: 480, by: 340, plat: { x: 420, y: 340, w: 160 } },
+        { qIdx: 2, bx: 720, by: 245, plat: { x: 640, y: 345, w: 180 } },
+        { qIdx: 3, bx: 960, by: 340, plat: null },
+
+        // Zon 2: Koridor Kelas (Soalan 5 - 8)
+        { qIdx: 4, bx: 1360, by: 340, plat: null },
+        { qIdx: 5, bx: 1620, by: 245, plat: { x: 1540, y: 345, w: 180 } },
+        { qIdx: 6, bx: 1920, by: 340, plat: { x: 1860, y: 340, w: 170 } },
+        { qIdx: 7, bx: 2240, by: 245, plat: { x: 2160, y: 345, w: 190 } },
+
+        // Zon 3: Sudut Bacaan & Perpustakaan (Soalan 9 - 12)
+        { qIdx: 8, bx: 2700, by: 340, plat: null },
+        { qIdx: 9, bx: 2980, by: 245, plat: { x: 2900, y: 345, w: 180 } },
+        { qIdx: 10, bx: 3280, by: 340, plat: { x: 3220, y: 340, w: 170 } },
+        { qIdx: 11, bx: 3580, by: 245, plat: { x: 3500, y: 345, w: 190 } },
+
+        // Zon 4: Taman & Padang Sekolah (Soalan 13 - 15)
+        { qIdx: 12, bx: 4030, by: 340, plat: null },
+        { qIdx: 13, bx: 4310, by: 245, plat: { x: 4230, y: 345, w: 180 } },
+        { qIdx: 14, bx: 4600, by: 340, plat: { x: 4540, y: 340, w: 170 } }
+    ];
+
+    levelLayout.forEach(item => {
+        if (item.plat) {
+            platforms.push({
+                x: item.plat.x,
+                y: item.plat.y,
+                w: item.plat.w,
+                h: 24,
+                type: 'brick'
+            });
+        }
+
+        questionBlocks.push({
+            x: item.bx,
+            y: item.by,
+            w: 40,
+            h: 40,
+            qIndex: item.qIdx,
+            hit: false,
+            answeredCorrectly: false,
+            bumpOffset: 0
+        });
+
+        // Tambah syiling bintang di sekitar platform
+        coins.push({ x: item.bx + 10, y: item.by - 45, w: 20, h: 20, collected: false });
+        if (item.plat) {
+            coins.push({ x: item.plat.x + 20, y: item.plat.y - 35, w: 20, h: 20, collected: false });
+            coins.push({ x: item.plat.x + item.plat.w - 40, y: item.plat.y - 35, w: 20, h: 20, collected: false });
+        }
+    });
+
+    // Syiling tambahan laluan biasa
+    [160, 200, 660, 700, 1450, 1490, 2080, 2120, 2800, 2840, 3400, 3440, 4120, 4160, 4750, 4790].forEach(cx => {
+        coins.push({ x: cx, y: GROUND_Y - 38, w: 20, h: 20, collected: false });
+    });
+
+    // 3. Musuh Kecil "Raksasa Rasa Kekok" (Boleh dipijak seperti Goomba!)
+    const enemySpawns = [
+        { x: 560, minX: 430, maxX: 820, label: 'Kekok' },
+        { x: 1020, minX: 880, maxX: 1110, label: 'Segan' },
+        { x: 1720, minX: 1500, maxX: 1850, label: 'Gementar' },
+        { x: 2350, minX: 2150, maxX: 2440, label: 'Kekok' },
+        { x: 3080, minX: 2880, maxX: 3200, label: 'Sunyi' },
+        { x: 3680, minX: 3480, maxX: 3770, label: 'Ragu' },
+        { x: 4400, minX: 4200, maxX: 4520, label: 'Kekok' }
+    ];
+
+    enemySpawns.forEach(e => {
+        enemies.push({
+            x: e.x,
+            y: GROUND_Y - 34,
+            w: 36,
+            h: 34,
+            vx: -65,
+            minX: e.minX,
+            maxX: e.maxX,
+            alive: true,
+            label: e.label
+        });
+    });
+
+    // 4. Hiasan Latar Belakang Sekolah (Papan Tanda Zon, Pokok, Bangunan, Awan)
+    decorations = [
+        { type: 'sign', x: 130, y: GROUND_Y - 64, text: 'KANTIN' },
+        { type: 'school_building', x: 340, y: GROUND_Y - 190 },
+        { type: 'tree', x: 870, y: GROUND_Y - 110 },
+        { type: 'sign', x: 1270, y: GROUND_Y - 64, text: 'KORIDOR' },
+        { type: 'bookshelf', x: 1780, y: GROUND_Y - 95 },
+        { type: 'sign', x: 2600, y: GROUND_Y - 64, text: 'PUSTAKA' },
+        { type: 'bookshelf', x: 3140, y: GROUND_Y - 95 },
+        { type: 'sign', x: 3930, y: GROUND_Y - 64, text: 'TAMAN' },
+        { type: 'tree', x: 4160, y: GROUND_Y - 110 },
+        { type: 'tree', x: 4720, y: GROUND_Y - 110 }
+    ];
+
+    // 5. Bendera Penamat Sekolah (Mudah dicapai di atas lantai)
+    flagPole = {
+        x: 4920,
+        y: GROUND_Y - 220,
+        w: 14,
+        h: 220
+    };
+}
+
+/**
+ * Tetapkan semula permainan dari awal
+ */
+function resetGame() {
+    score = 0;
+    socialBattery = 70;
+    answeredCount = 0;
+    cameraX = 0;
+
+    player.x = 70;
+    player.y = GROUND_Y - player.h - 10;
+    player.vx = 0;
+    player.vy = 0;
+    player.onGround = false;
+    player.facingRight = true;
+    player.invulnTimer = 0;
+
+    buildLevel();
+    updateHUD();
+}
+
+/**
+ * Kemas kini paparan bar Bateri Sosial, Bintang dan Kuiz
+ */
+function updateHUD() {
+    socialBattery = Math.max(10, Math.min(100, socialBattery));
+    const fill = document.getElementById('battery-fill');
+    const text = document.getElementById('battery-text');
+    fill.style.width = `${socialBattery}%`;
+    text.textContent = `${socialBattery}%`;
+
+    if (socialBattery > 50) {
+        fill.style.background = 'linear-gradient(90deg, #22c55e, #4ade80)';
+    } else if (socialBattery > 25) {
+        fill.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+    } else {
+        fill.style.background = 'linear-gradient(90deg, #ef4444, #f87171)';
+    }
+
+    document.getElementById('score-text').textContent = score;
+    document.getElementById('quiz-progress-text').textContent = `${answeredCount}/15`;
+}
+
+/**
+ * Kesan zarah (Particles) & Teks Terapung
+ */
+function spawnParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 260,
+            vy: (Math.random() - 0.8) * 280,
+            size: 4 + Math.random() * 4,
+            color,
+            life: 0.6 + Math.random() * 0.3
+        });
+    }
+}
+
+function spawnFloatingText(x, y, text, color = '#fbbf24') {
+    floatingTexts.push({
+        x,
+        y,
+        text,
+        color,
+        life: 1.1
+    });
+}
+
+/**
+ * ============================================================================
+ * 5. LOGIK KUIZ INTERAKTIF (POP-UP APABILA LANGGAR BLOK ?)
+ * ============================================================================
+ */
+let activeBlock = null;
+
+function openQuizModal(block) {
+    activeBlock = block;
+    gameState = 'QUIZ';
+    keys.left = false;
+    keys.right = false;
+    keys.jump = false;
+
+    const qData = QUIZ_QUESTIONS[block.qIndex];
+    document.getElementById('quiz-badge-num').textContent = `Soalan #${qData.id} daripada 15`;
+    document.getElementById('quiz-question').textContent = qData.q;
+
+    // Susun secara rawak 3 pilihan jawapan (1 betul + 2 salah)
+    const choices = [
+        { text: qData.correct, isCorrect: true },
+        { text: qData.wrong[0], isCorrect: false },
+        { text: qData.wrong[1], isCorrect: false }
+    ];
+
+    for (let i = choices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+
+    const optionsContainer = document.getElementById('quiz-options');
+    optionsContainer.innerHTML = '';
+    const letters = ['A', 'B', 'C'];
+
+    choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option-btn';
+        btn.innerHTML = `
+            <span class="option-letter">${letters[idx]}</span>
+            <span>${choice.text}</span>
+        `;
+        btn.onclick = () => handleQuizAnswer(btn, choice.isCorrect, qData.correct);
+        optionsContainer.appendChild(btn);
+    });
+
+    const feedback = document.getElementById('quiz-feedback');
+    feedback.className = 'hidden';
+    feedback.textContent = '';
+
+    document.getElementById('btn-continue-quiz').classList.add('hidden');
+    document.getElementById('quiz-modal').classList.remove('hidden');
+}
+
+function handleQuizAnswer(clickedBtn, isCorrect, correctAnswerText) {
+    const allBtns = document.querySelectorAll('#quiz-options .option-btn');
+    allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent.includes(correctAnswerText)) {
+            b.classList.add('correct');
+        }
+    });
+
+    const feedback = document.getElementById('quiz-feedback');
+    feedback.classList.remove('hidden');
+
+    if (!activeBlock.hit) {
+        activeBlock.hit = true;
+        answeredCount++;
+    }
+
+    if (isCorrect) {
+        sfx.correct();
+        clickedBtn.classList.add('correct');
+        activeBlock.answeredCorrectly = true;
+        score += 50;
+        socialBattery = Math.min(100, socialBattery + 15);
+        feedback.style.background = '#dcfce7';
+        feedback.style.color = '#14532d';
+        feedback.style.border = '2px solid #22c55e';
+        feedback.innerHTML = '🎉 <strong>Hebat! Jawapan Betul!</strong> Bateri Sosial kamu bertambah +15% dan dapat +50 Bintang!';
+        spawnParticles(activeBlock.x + 20, activeBlock.y, '#fbbf24', 18);
+    } else {
+        sfx.wrong();
+        clickedBtn.classList.add('wrong');
+        score += 10; // Tetap beri bintang galakan usaha
+        feedback.style.background = '#fef3c7';
+        feedback.style.color = '#78350f';
+        feedback.style.border = '2px solid #f59e0b';
+        feedback.innerHTML = `💡 <strong>Hampir tepat!</strong> Jawapan terbaik ialah yang bertanda hijau. Teruskan usaha, kamu dapat +10 Bintang semangat!`;
+    }
+
+    updateHUD();
+    document.getElementById('btn-continue-quiz').classList.remove('hidden');
+}
+
+document.getElementById('btn-continue-quiz').addEventListener('click', () => {
+    document.getElementById('quiz-modal').classList.add('hidden');
+    gameState = 'PLAYING';
+});
+
+/**
+ * ============================================================================
+ * 6. KEMAS KINI FIZIK & PERLANGGARAN (UPDATE LOOP)
+ * ============================================================================
+ */
+function checkAABB(a, b) {
+    return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+    );
+}
+
+function update(dt) {
+    if (gameState !== 'PLAYING') return;
+    gameTime += dt;
+
+    // 1. Pergerakan Mendatar Pemain
+    if (keys.left) {
+        player.vx = -MOVE_SPEED;
+        player.facingRight = false;
+        player.walkTimer += dt * 15;
+    } else if (keys.right) {
+        player.vx = MOVE_SPEED;
+        player.facingRight = true;
+        player.walkTimer += dt * 15;
+    } else {
+        player.vx = 0;
+        player.walkTimer = 0;
+    }
+
+    // Lompatan
+    if (keys.jump && player.onGround) {
+        player.vy = JUMP_FORCE;
+        player.onGround = false;
+        sfx.jump();
+        spawnParticles(player.x + player.w / 2, player.y + player.h, '#ffffff', 5);
+    }
+
+    // Gerak X & Perlanggaran Blok/Platform Mendatar
+    player.x += player.vx * dt;
+    if (player.x < 0) player.x = 0;
+
+    // 2. Graviti & Gerak Menegak
+    player.vy += GRAVITY * dt;
+    if (player.vy > 850) player.vy = 850;
+    player.y += player.vy * dt;
+    player.onGround = false;
+
+    // Perlanggaran dengan Platform (Lantai & Bata)
+    for (const plat of platforms) {
+        if (checkAABB(player, plat)) {
+            // Mendarat di atas platform
+            if (player.vy >= 0 && (player.y + player.h - player.vy * dt) <= plat.y + 14) {
+                player.y = plat.y - player.h;
+                player.vy = 0;
+                player.onGround = true;
+            }
+        }
+    }
+
+    // Perlanggaran dengan 15 Blok Tanda Soal (?)
+    for (const block of questionBlocks) {
+        if (block.bumpOffset > 0) {
+            block.bumpOffset = Math.max(0, block.bumpOffset - dt * 60);
+        }
+
+        if (checkAABB(player, block)) {
+            const prevBottom = player.y + player.h - player.vy * dt;
+            const prevTop = player.y - player.vy * dt;
+
+            if (player.vy >= 0 && prevBottom <= block.y + 12) {
+                // Berdiri di atas blok ?
+                player.y = block.y - player.h;
+                player.vy = 0;
+                player.onGround = true;
+            } else if (player.vy < 0 && prevTop >= block.y + block.h - 14) {
+                // Tanduk blok ? dari bawah!
+                player.y = block.y + block.h;
+                player.vy = 80;
+                block.bumpOffset = 10;
+                sfx.blockHit();
+
+                if (!block.hit) {
+                    openQuizModal(block);
+                    return;
+                } else {
+                    // Jika sudah dijawab, boleh buka semula untuk ulang kaji!
+                    spawnFloatingText(block.x, block.y - 10, 'Sudah dijawab!', '#38bdf8');
+                }
+            }
+        }
+    }
+
+    // Jika terjatuh ke dalam jurang kecil, selamatkan pemain semula ke tebing terdekat
+    if (player.y > WORLD_HEIGHT + 40) {
+        sfx.hurt();
+        socialBattery = Math.max(15, socialBattery - 10);
+        updateHUD();
+        player.x = Math.max(60, player.x - 140);
+        player.y = GROUND_Y - player.h - 60;
+        player.vy = 0;
+        spawnFloatingText(player.x, player.y, 'Hati-hati langkah!', '#f87171');
+    }
+
+    // 3. Kumpul Syiling Bintang
+    for (const coin of coins) {
+        if (!coin.collected && checkAABB(player, coin)) {
+            coin.collected = true;
+            score += 10;
+            socialBattery = Math.min(100, socialBattery + 2);
+            sfx.coin();
+            updateHUD();
+            spawnParticles(coin.x + 10, coin.y + 10, '#fde047', 7);
+            spawnFloatingText(coin.x, coin.y, '+10 ⭐', '#fde047');
+        }
+    }
+
+    // 4. Kemas kini Raksasa Rasa Kekok
+    if (player.invulnTimer > 0) player.invulnTimer -= dt;
+
+    for (const enemy of enemies) {
+        if (!enemy.alive) continue;
+        enemy.x += enemy.vx * dt;
+        if (enemy.x <= enemy.minX) {
+            enemy.x = enemy.minX;
+            enemy.vx = Math.abs(enemy.vx);
+        } else if (enemy.x + enemy.w >= enemy.maxX) {
+            enemy.x = enemy.maxX - enemy.w;
+            enemy.vx = -Math.abs(enemy.vx);
+        }
+
+        if (checkAABB(player, enemy)) {
+            const prevBottom = player.y + player.h - player.vy * dt;
+            if (player.vy > 0 && prevBottom <= enemy.y + 18) {
+                // Pijak Raksasa Rasa Kekok!
+                enemy.alive = false;
+                player.vy = -380;
+                score += 25;
+                sfx.stomp();
+                updateHUD();
+                spawnParticles(enemy.x + 18, enemy.y + 17, '#a855f7', 14);
+                spawnFloatingText(enemy.x, enemy.y - 10, 'Atasi Rasa Kekok! +25', '#c084fc');
+            } else if (player.invulnTimer <= 0) {
+                // Terlanggar dari tepi -> Bateri sosial berkurang sedikit
+                player.invulnTimer = 1.4;
+                socialBattery = Math.max(10, socialBattery - 10);
+                player.vy = -260;
+                sfx.hurt();
+                updateHUD();
+                spawnFloatingText(player.x, player.y - 12, 'Alamak, rasa kekok! -10% 🔋', '#fca5a5');
+            }
+        }
+    }
+
+    // 5. Zarah & Teks Terapung
+    particles.forEach(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 600 * dt;
+        p.life -= dt;
+    });
+    particles = particles.filter(p => p.life > 0);
+
+    floatingTexts.forEach(ft => {
+        ft.y -= 35 * dt;
+        ft.life -= dt;
+    });
+    floatingTexts = floatingTexts.filter(ft => ft.life > 0);
+
+    // 6. Kamera Mengikut Pemain Secara Lancar
+    const viewWidth = (canvas.width / canvas.height) * WORLD_HEIGHT;
+    const targetCamX = player.x - viewWidth * 0.35;
+    cameraX += (targetCamX - cameraX) * Math.min(1, dt * 8);
+    cameraX = Math.max(0, Math.min(5100 - viewWidth, cameraX));
+
+    // 7. Periksa Bendera Penamat Sekolah
+    if (player.x + player.w >= flagPole.x) {
+        triggerEndGame();
+    }
+}
+
+function triggerEndGame() {
+    gameState = 'END';
+    sfx.win();
+    keys.left = false;
+    keys.right = false;
+    keys.jump = false;
+
+    document.getElementById('final-stars').textContent = `${score} ⭐`;
+    document.getElementById('final-battery').textContent = `${socialBattery}% 🔋`;
+    document.getElementById('final-quiz').textContent = `${answeredCount}/15 ❓`;
+
+    const msgEl = document.getElementById('end-message');
+    if (answeredCount === 15) {
+        msgEl.textContent = "Luar biasa! Kamu berjaya membuka kesemua 15 blok ilmu dan menguasai seni bersembang tanpa rasa kekok!";
+    } else {
+        msgEl.textContent = `Tahniah sampai ke garisan penamat! Kamu menjawab ${answeredCount} daripada 15 soalan. Cuba cari semua 15 blok lagi jika mahu!`;
+    }
+
+    document.getElementById('end-screen').classList.remove('hidden');
+}
+
+/**
+ * ============================================================================
+ * 7. LUKISAN GRAFIK DUNIA SEKOLAH RETRO PIXEL (RENDER LOOP)
+ * ============================================================================
+ */
+function render() {
+    // Pastikan saiz kanvas sepadan dengan bekasnya
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    }
+
+    const scale = canvas.height / WORLD_HEIGHT;
+    const viewWidth = canvas.width / scale;
+
+    ctx.save();
+    ctx.scale(scale, scale);
+
+    // 1. Langit Ceria Sekolah
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, WORLD_HEIGHT);
+    skyGrad.addColorStop(0, '#38bdf8');
+    skyGrad.addColorStop(0.75, '#bae6fd');
+    skyGrad.addColorStop(1, '#fef9c3');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, viewWidth, WORLD_HEIGHT);
+
+    // Matahari Ceria
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.arc(viewWidth - 90, 85, 36, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Awan Paralaks
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    for (let i = 0; i < 14; i++) {
+        const cloudX = ((i * 420) - cameraX * 0.3) % (viewWidth + 300);
+        const cx = cloudX < -120 ? cloudX + viewWidth + 300 : cloudX;
+        const cy = 65 + (i % 3) * 35;
+        ctx.fillRect(cx, cy, 70, 22);
+        ctx.fillRect(cx + 15, cy - 12, 40, 16);
+    }
+
+    // Bukit Hijau Jauh (Paralaks)
+    ctx.fillStyle = '#86efac';
+    for (let i = 0; i < 12; i++) {
+        const hx = (i * 520) - cameraX * 0.5;
+        ctx.beginPath();
+        ctx.arc(hx + 150, GROUND_Y + 20, 190, Math.PI, 0);
+        ctx.fill();
+    }
+
+    // Terjemah mengikut kamera dunia
+    ctx.translate(-cameraX, 0);
+
+    // 2. Hiasan Sekolah (Bangunan, Papan Tanda, Pokok, Rak Buku)
+    for (const dec of decorations) {
+        if (dec.x + 300 < cameraX || dec.x - 100 > cameraX + viewWidth) continue;
+
+        if (dec.type === 'school_building') {
+            // Bangunan Sekolah Ceria
+            ctx.fillStyle = '#fef3c7';
+            ctx.fillRect(dec.x, dec.y, 240, 190);
+            ctx.fillStyle = '#dc2626'; // Bumbung merah
+            ctx.beginPath();
+            ctx.moveTo(dec.x - 15, dec.y);
+            ctx.lineTo(dec.x + 120, dec.y - 55);
+            ctx.lineTo(dec.x + 255, dec.y);
+            ctx.closePath();
+            ctx.fill();
+            // Tingkap kelas
+            ctx.fillStyle = '#7dd3fc';
+            for (let wx = 0; wx < 3; wx++) {
+                ctx.fillRect(dec.x + 28 + wx * 68, dec.y + 35, 44, 44);
+                ctx.strokeStyle = '#92400e';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(dec.x + 28 + wx * 68, dec.y + 35, 44, 44);
+            }
+            // Pintu Kantin
+            ctx.fillStyle = '#b45309';
+            ctx.fillRect(dec.x + 96, dec.y + 110, 48, 80);
+        } else if (dec.type === 'sign') {
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(dec.x + 36, dec.y + 24, 8, 40);
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(dec.x, dec.y, 82, 28);
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(dec.x, dec.y, 82, 28);
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(dec.text, dec.x + 41, dec.y + 18);
+        } else if (dec.type === 'tree') {
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(dec.x + 26, dec.y + 50, 18, 60);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(dec.x, dec.y + 15, 70, 45);
+            ctx.fillStyle = '#4ade80';
+            ctx.fillRect(dec.x + 12, dec.y, 46, 25);
+        } else if (dec.type === 'bookshelf') {
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(dec.x, dec.y, 76, 95);
+            const bookColors = ['#ef4444', '#3b82f6', '#eab308', '#10b981', '#a855f7'];
+            for (let row = 0; row < 3; row++) {
+                ctx.fillStyle = '#451a03';
+                ctx.fillRect(dec.x + 6, dec.y + 8 + row * 28, 64, 22);
+                for (let b = 0; b < 5; b++) {
+                    ctx.fillStyle = bookColors[(row + b) % bookColors.length];
+                    ctx.fillRect(dec.x + 10 + b * 11, dec.y + 11 + row * 28, 9, 19);
+                }
+            }
+        }
+    }
+
+    // 3. Platform (Lantai & Bata Sekolah)
+    for (const plat of platforms) {
+        if (plat.x + plat.w < cameraX || plat.x > cameraX + viewWidth) continue;
+
+        if (plat.type === 'ground') {
+            // Tanah
+            ctx.fillStyle = '#b45309';
+            ctx.fillRect(plat.x, plat.y + 14, plat.w, plat.h - 14);
+            // Corak bata tanah
+            ctx.fillStyle = '#92400e';
+            for (let gx = plat.x; gx < plat.x + plat.w; gx += 40) {
+                ctx.fillRect(gx + 6, plat.y + 26, 24, 12);
+                ctx.fillRect(gx + 18, plat.y + 48, 20, 12);
+            }
+            // Rumput hijau atas
+            ctx.fillStyle = '#16a34a';
+            ctx.fillRect(plat.x, plat.y, plat.w, 16);
+            ctx.fillStyle = '#4ade80';
+            ctx.fillRect(plat.x, plat.y, plat.w, 5);
+        } else {
+            // Platform terapung gaya retro Mario
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(plat.x, plat.y, plat.w, plat.h);
+            // Garis bata
+            for (let bx = plat.x + 32; bx < plat.x + plat.w; bx += 32) {
+                ctx.beginPath();
+                ctx.moveTo(bx, plat.y);
+                ctx.lineTo(bx, plat.y + plat.h);
+                ctx.stroke();
+            }
+        }
+    }
+
+    // 4. 15 Blok Tanda Soal (?)
+    for (const block of questionBlocks) {
+        if (block.x + block.w < cameraX || block.x > cameraX + viewWidth) continue;
+
+        const drawY = block.y - block.bumpOffset;
+
+        if (block.hit) {
+            // Blok sudah dibuka (Warna lembut / hijau jika betul)
+            ctx.fillStyle = block.answeredCorrectly ? '#86efac' : '#cbd5e1';
+            ctx.fillRect(block.x, drawY, block.w, block.h);
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(block.x, drawY, block.w, block.h);
+
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 18px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(block.answeredCorrectly ? '✓' : '•', block.x + block.w / 2, drawY + 26);
+        } else {
+            // Blok Emas Berkelip (?)
+            const pulse = Math.sin(gameTime * 6) * 2;
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(block.x, drawY + pulse * 0.4, block.w, block.h);
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(block.x + 3, drawY + 3 + pulse * 0.4, block.w - 6, 6);
+
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(block.x, drawY + pulse * 0.4, block.w, block.h);
+
+            // Nombor soalan kecil & tanda ? besar
+            ctx.fillStyle = '#78350f';
+            ctx.font = 'bold 22px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('?', block.x + block.w / 2 + 1, drawY + 29 + pulse * 0.4);
+        }
+    }
+
+    // 5. Syiling Bintang
+    for (const coin of coins) {
+        if (coin.collected) continue;
+        if (coin.x + coin.w < cameraX || coin.x > cameraX + viewWidth) continue;
+
+        const bob = Math.sin(gameTime * 5 + coin.x * 0.05) * 4;
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(coin.x + 10, coin.y + 10 + bob, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#d97706';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', coin.x + 10, coin.y + 14 + bob);
+    }
+
+    // 6. Raksasa Rasa Kekok (Comel tapi keliru)
+    for (const enemy of enemies) {
+        if (!enemy.alive) continue;
+        if (enemy.x + enemy.w < cameraX || enemy.x > cameraX + viewWidth) continue;
+
+        const wobble = Math.sin(gameTime * 10) * 2;
+        // Badan awan kelabu-ungu "Rasa Kekok"
+        ctx.fillStyle = '#7e22ce';
+        ctx.beginPath();
+        ctx.arc(enemy.x + 18, enemy.y + 18 + wobble, 17, Math.PI, 0);
+        ctx.fillRect(enemy.x + 1, enemy.y + 18 + wobble, 34, 12);
+        ctx.fill();
+
+        // Mata pening
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(enemy.x + 8, enemy.y + 10 + wobble, 7, 7);
+        ctx.fillRect(enemy.x + 21, enemy.y + 10 + wobble, 7, 7);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(enemy.x + 10, enemy.y + 12 + wobble, 3, 3);
+        ctx.fillRect(enemy.x + 23, enemy.y + 12 + wobble, 3, 3);
+
+        // Label kecil di atas kepala
+        ctx.fillStyle = '#581c87';
+        ctx.font = 'bold 10px Fredoka, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(enemy.label, enemy.x + 18, enemy.y - 4);
+    }
+
+    // 7. Bendera Penamat Sekolah
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(flagPole.x, flagPole.y, 8, flagPole.h);
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.arc(flagPole.x + 4, flagPole.y, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kain Bendera Hijau "TAMAT"
+    ctx.fillStyle = '#16a34a';
+    ctx.fillRect(flagPole.x + 8, flagPole.y + 12, 74, 42);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px Fredoka, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('TAMAT!', flagPole.x + 45, flagPole.y + 38);
+
+    // 8. Watak Pemain
+    if (player.invulnTimer <= 0 || Math.floor(gameTime * 16) % 2 === 0) {
+        drawPixelCharacter(
+            ctx,
+            player.x,
+            player.y,
+            player.w,
+            player.h,
+            selectedGender,
+            player.facingRight,
+            player.walkTimer,
+            !player.onGround
+        );
+    }
+
+    // 9. Zarah & Teks Terapung
+    for (const p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+
+    for (const ft of floatingTexts) {
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 14px Fredoka, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x + 1, ft.y + 1);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+    }
+
+    ctx.restore();
+}
+
+/**
+ * Gelung Animasi Utama (Game Loop)
+ */
+function gameLoop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
+    lastTime = timestamp;
+
+    update(dt);
+    render();
+
+    requestAnimationFrame(gameLoop);
+}
+
+/**
+ * ============================================================================
+ * 8. KAWALAN PAPAN KEKUNCI, SENTUHAN & BUTANG UI
+ * ============================================================================
+ */
+function selectCharacter(gender) {
+    selectedGender = gender;
+    document.getElementById('select-boy').classList.toggle('selected', gender === 'boy');
+    document.getElementById('select-girl').classList.toggle('selected', gender === 'girl');
+    sfx.coin();
+}
+
+// Butang Mula Permainan
+document.getElementById('btn-start-game').addEventListener('click', () => {
+    sfx.init();
+    sfx.correct();
+    document.getElementById('start-screen').classList.add('hidden');
+    resetGame();
+    gameState = 'PLAYING';
+});
+
+// Butang Main Lagi (Skrin Tamat)
+document.getElementById('btn-play-again').addEventListener('click', () => {
+    document.getElementById('end-screen').classList.add('hidden');
+    resetGame();
+    gameState = 'PLAYING';
+});
+
+// Butang Mula Semula di HUD
+document.getElementById('btn-restart-hud').addEventListener('click', () => {
+    resetGame();
+    if (gameState !== 'START') {
+        document.getElementById('quiz-modal').classList.add('hidden');
+        document.getElementById('list-modal').classList.add('hidden');
+        document.getElementById('end-screen').classList.add('hidden');
+        gameState = 'PLAYING';
+    }
+});
+
+// Butang Bisu / Bunyi
+document.getElementById('btn-mute').addEventListener('click', (e) => {
+    sfx.muted = !sfx.muted;
+    e.currentTarget.textContent = sfx.muted ? '🔇' : '🔊';
+});
+
+// Butang Senarai Soalan (Helper)
+document.getElementById('btn-list').addEventListener('click', () => {
+    if (gameState === 'START') return;
+    const prevState = gameState;
+    gameState = 'LIST';
+
+    const listContainer = document.getElementById('questions-checklist');
+    listContainer.innerHTML = '';
+
+    QUIZ_QUESTIONS.forEach((item, idx) => {
+        const block = questionBlocks[idx];
+        const isDone = block && block.hit;
+        const div = document.createElement('div');
+        div.className = `q-list-item ${isDone ? 'done' : ''}`;
+        div.innerHTML = `
+            <div>
+                <div style="font-weight: 700; color: #1e293b;">Soalan #${item.id}</div>
+                <div style="color: #475569; font-size: 0.85rem;">${item.q}</div>
+            </div>
+            <div style="font-weight: 700; white-space: nowrap; color: ${isDone ? '#16a34a' : '#d97706'};">
+                ${isDone ? '✅ Selesai' : '❓ Belum'}
+            </div>
+        `;
+        listContainer.appendChild(div);
+    });
+
+    document.getElementById('list-modal').classList.remove('hidden');
+    document.getElementById('btn-close-list').onclick = () => {
+        document.getElementById('list-modal').classList.add('hidden');
+        gameState = prevState === 'LIST' ? 'PLAYING' : prevState;
+    };
+});
+
+// Pendengar Papan Kekunci (Keyboard)
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+        keys.jump = true;
+        if (gameState === 'PLAYING') e.preventDefault();
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') keys.jump = false;
+});
+
+// Kawalan Sentuh Telefon Pintar & Tablet (Touch & Mouse)
+function bindTouchButton(btnId, keyName) {
+    const btn = document.getElementById(btnId);
+    const press = (e) => {
+        e.preventDefault();
+        sfx.init();
+        keys[keyName] = true;
+        btn.classList.add('pressed');
+    };
+    const release = (e) => {
+        e.preventDefault();
+        keys[keyName] = false;
+        btn.classList.remove('pressed');
+    };
+
+    btn.addEventListener('touchstart', press, { passive: false });
+    btn.addEventListener('touchend', release, { passive: false });
+    btn.addEventListener('touchcancel', release, { passive: false });
+    btn.addEventListener('mousedown', press);
+    btn.addEventListener('mouseup', release);
+    btn.addEventListener('mouseleave', release);
+}
+
+bindTouchButton('touch-left', 'left');
+bindTouchButton('touch-right', 'right');
+bindTouchButton('touch-jump', 'jump');
+
+// Mulakan permainan apabila halaman selesai dimuatkan
+window.onload = function () {
+    renderCharacterPreviews();
+    buildLevel();
+    requestAnimationFrame(gameLoop);
+};
+</script>
+</body>
+</html>
